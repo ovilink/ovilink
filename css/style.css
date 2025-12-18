@@ -1,0 +1,981 @@
+@import url('theme.css');
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: var(--font-family);
+    background-color: var(--bg-app);
+    color: var(--text-primary);
+    height: 100vh;
+    overflow: hidden;
+    user-select: none;
+    /* App-like feel */
+}
+
+/* --- Main Layout Grid --- */
+#app-container {
+    display: grid;
+    grid-template-columns: var(--activity-bar-width) var(--sidebar-width) 1fr var(--inspector-width);
+    grid-template-rows: 1fr var(--status-bar-height);
+    grid-template-areas:
+        "activity sidebar workspace inspector"
+        "statusbar statusbar statusbar statusbar";
+    height: 100vh;
+    width: 100vw;
+}
+
+/* --- Activity Bar (The Solution for 100+ Plugins) --- */
+#activity-bar {
+    grid-area: activity;
+    background-color: var(--bg-activity-bar);
+    border-right: 1px solid var(--border-color);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding-top: 5px;
+    /* Reduced from 10px */
+    padding-bottom: 0;
+    /* Removed bottom padding */
+    z-index: 10;
+    overflow: visible;
+    /* Changed from hidden to allow badges to show */
+    /* Ensure content stays within the bar */
+}
+
+/* Top section (Logo/Brand) */
+.activity-header {
+    margin-bottom: 8px;
+    /* Reduced from 10px */
+    flex-shrink: 0;
+}
+
+/* Scrollable Middle Section */
+#activity-bar-content {
+    flex: 1;
+    /* Takes up remaining space */
+    width: 100%;
+    overflow-y: auto;
+    /* Enables scrolling */
+    overflow-x: hidden;
+    /* Keep hidden to prevent horizontal scroll */
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    /* Reduced from 8px */
+    /* Space between icons */
+    padding-top: 4px;
+    padding-bottom: 8px;
+
+    /* Scrollbar Styling for "Premium" feel - Visible but Slim */
+    scrollbar-width: thin;
+    /* Firefox: Slim scrollbar */
+    scrollbar-color: var(--bg-hover) transparent;
+    /* Firefox: thumb track */
+}
+
+/* Chrome/Safari/Edge Scrollbar */
+#activity-bar-content::-webkit-scrollbar {
+    width: 4px;
+    /* Slim width */
+}
+
+#activity-bar-content::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+#activity-bar-content::-webkit-scrollbar-thumb {
+    background-color: var(--bg-hover);
+    border-radius: 4px;
+}
+
+#activity-bar-content::-webkit-scrollbar-thumb:hover {
+    background-color: var(--text-secondary);
+}
+
+/* Bottom section (System Controls - Save/Load) */
+#activity-bar-bottom {
+    flex-shrink: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 0;
+    border-top: 1px solid var(--border-subtle);
+    width: 100%;
+    background-color: var(--bg-activity-bar);
+}
+
+/* Activity Items (Icons) */
+.activity-item {
+    width: 36px;
+    height: 36px;
+    border-radius: 8px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+    color: var(--text-secondary);
+    transition: all var(--transition-speed) ease;
+    position: relative;
+}
+
+.activity-item:hover {
+    color: var(--text-primary);
+    background-color: var(--bg-hover);
+}
+
+.activity-item.active {
+    color: var(--text-primary);
+    background-color: var(--bg-active);
+    /* Or a left border indicator */
+}
+
+/* Tooltip (Essential for many plugins) */
+.activity-item::after {
+    content: attr(data-tooltip);
+    position: fixed;
+    /* Use fixed like badge */
+    left: calc(var(--activity-bar-width) + 2px);
+    /* Closer to activity bar */
+    transform: translateY(-50%);
+    background-color: rgba(45, 45, 45, 0.95);
+    /* Lighter dark gray instead of pure black */
+    color: #fff;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 10px;
+    white-space: nowrap;
+    opacity: 0;
+    visibility: hidden;
+    /* Add visibility control */
+    pointer-events: none;
+    transition: opacity 0.2s;
+    margin-left: 10px;
+    z-index: 2000;
+    /* Higher than badge to show on top */
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.5);
+}
+
+.activity-item:hover::after {
+    opacity: 1;
+    visibility: visible;
+    /* Show on hover */
+}
+
+/* Tab count badge - using ::before to avoid conflict with tooltip */
+.activity-item::before {
+    content: attr(data-tab-count);
+    position: fixed;
+    /* Fixed to escape activity bar overflow */
+    left: calc(var(--activity-bar-width) - 12px);
+    /* Inside activity bar, perfect position to not overlap icon text */
+    /* Top will be calculated by JS or use transform from parent */
+    background: var(--text-accent);
+    color: white;
+    font-size: 8px;
+    /* Smaller, more compact */
+    font-weight: bold;
+    padding: 2px 4px;
+    /* Tighter padding */
+    border-radius: 8px;
+    display: none;
+    min-width: 14px;
+    text-align: center;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+    z-index: 1000;
+    /* Very high z-index */
+    pointer-events: none;
+    /* Don't interfere with clicks */
+}
+
+/* Show badge only when there are tabs */
+.activity-item[data-tab-count]:not([data-tab-count="0"])::before {
+    display: block;
+}
+
+/* Enhanced badge when plugin is active */
+.activity-item.active[data-tab-count]::before {
+    background: white;
+    color: var(--text-accent);
+}
+
+
+/* --- Sidebar --- */
+#sidebar {
+    grid-area: sidebar;
+    background-color: var(--bg-sidebar);
+    border-right: 1px solid var(--border-color);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.sidebar-header {
+    height: var(--header-height);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 15px;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--text-secondary);
+    border-bottom: 1px solid var(--border-subtle);
+}
+
+.sidebar-content {
+    flex: 1;
+    overflow-y: auto;
+    overflow-x: hidden;
+    padding: 10px;
+
+    /* Custom scrollbar styling */
+    scrollbar-width: thin;
+    scrollbar-color: var(--bg-hover) transparent;
+}
+
+.sidebar-content::-webkit-scrollbar {
+    width: 6px;
+}
+
+.sidebar-content::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.sidebar-content::-webkit-scrollbar-thumb {
+    background-color: var(--bg-hover);
+    border-radius: 3px;
+}
+
+.sidebar-content::-webkit-scrollbar-thumb:hover {
+    background-color: var(--text-secondary);
+}
+
+/* --- Resize Handles --- */
+.resize-handle {
+    position: absolute;
+    width: 5px;
+    background: transparent;
+    cursor: col-resize;
+    transition: background var(--transition-speed) ease;
+    z-index: 100;
+    top: 0;
+    bottom: var(--status-bar-height);
+}
+
+/* Position sidebar resize handle */
+.resize-handle[data-target="sidebar"] {
+    left: calc(var(--activity-bar-width) + var(--sidebar-width));
+    transform: translateX(-2.5px);
+    /* Center the handle on the boundary */
+}
+
+/* Position inspector resize handle */
+.resize-handle[data-target="inspector"] {
+    right: var(--inspector-width);
+    transform: translateX(2.5px);
+    /* Center the handle on the boundary */
+}
+
+.resize-handle:hover,
+.resize-handle.resizing {
+    background: var(--text-accent);
+}
+
+.resize-handle::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: -2px;
+    right: -2px;
+    /* Expand hit area */
+}
+
+/* --- Panel Collapse Buttons --- */
+.panel-collapse-btn {
+    background: none;
+    border: none;
+    color: var(--text-secondary);
+    cursor: pointer;
+    padding: 4px 8px;
+    font-size: 12px;
+    border-radius: 4px;
+    transition: all var(--transition-speed) ease;
+    line-height: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.panel-collapse-btn:hover {
+    background: var(--bg-hover);
+    color: var(--text-primary);
+}
+
+.panel-collapse-btn:active {
+    background: var(--bg-active);
+    color: white;
+}
+
+/* --- Collapsed Panel States --- */
+#sidebar.collapsed,
+#inspector.collapsed {
+    width: 0 !important;
+    min-width: 0 !important;
+    border: none;
+    overflow: visible;
+    /* Changed from hidden to visible so button can show */
+    transition: width 0.3s ease;
+}
+
+/* Only hide the content, not the header */
+#sidebar.collapsed .sidebar-content,
+#inspector.collapsed .sidebar-content {
+    opacity: 0;
+    display: none;
+    transition: opacity 0.2s ease;
+}
+
+/* Keep header visible but position it outside */
+#sidebar.collapsed .sidebar-header {
+    position: fixed;
+    left: var(--activity-bar-width);
+    /* Start after activity bar */
+    top: 50%;
+    transform: translateY(-50%);
+    writing-mode: vertical-rl;
+    background: var(--bg-sidebar);
+    border: 1px solid var(--border-color);
+    border-left: none;
+    padding: 10px 5px;
+    z-index: 50;
+    /* Lower than modals but higher than content */
+    border-radius: 0 4px 4px 0;
+    cursor: pointer;
+    transition: left 0.2s ease;
+}
+
+#sidebar.collapsed .sidebar-header:hover {
+    left: calc(var(--activity-bar-width) + 2px);
+    background: var(--bg-hover);
+}
+
+#inspector.collapsed .sidebar-header {
+    position: fixed;
+    right: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    writing-mode: vertical-rl;
+    background: var(--bg-panel);
+    border: 1px solid var(--border-color);
+    border-right: none;
+    padding: 10px 5px;
+    z-index: 1000;
+    /* Higher z-index to ensure clickability */
+    border-radius: 4px 0 0 4px;
+    cursor: pointer;
+    transition: right 0.2s ease;
+    pointer-events: auto;
+    /* Ensure clicks are captured */
+}
+
+#inspector.collapsed .sidebar-header:hover {
+    right: 2px;
+    background: var(--bg-hover);
+}
+
+/* Ensure button inside collapsed header is clickable */
+#inspector.collapsed .panel-collapse-btn,
+#sidebar.collapsed .panel-collapse-btn {
+    pointer-events: auto;
+    cursor: pointer;
+    z-index: 1001;
+    position: relative;
+}
+
+/* Hide resize handle when panel is collapsed */
+#sidebar.collapsed+.resize-handle,
+.resize-handle+#inspector.collapsed {
+    pointer-events: none;
+    opacity: 0.3;
+}
+
+/* --- Workspace --- */
+#workspace {
+    grid-area: workspace;
+    background-color: var(--bg-app);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    position: relative;
+}
+
+/* Tabs Header */
+#tabs-container {
+    height: var(--header-height);
+    background-color: var(--bg-app);
+    display: flex;
+    align-items: flex-end;
+    /* Tabs sit on bottom line */
+    overflow-x: auto;
+    overflow-y: hidden;
+    border-bottom: 1px solid var(--border-color);
+
+    /* Custom scrollbar styling - Firefox */
+    scrollbar-width: thin;
+    scrollbar-color: var(--text-accent) transparent;
+}
+
+/* Custom scrollbar styling - Chrome/Safari/Edge */
+#tabs-container::-webkit-scrollbar {
+    height: 6px;
+}
+
+#tabs-container::-webkit-scrollbar-track {
+    background: transparent;
+    border-radius: 3px;
+}
+
+#tabs-container::-webkit-scrollbar-thumb {
+    background: var(--bg-hover);
+    border-radius: 3px;
+    transition: background 0.2s ease;
+}
+
+#tabs-container::-webkit-scrollbar-thumb:hover {
+    background: var(--text-accent);
+}
+
+#tabs-container::-webkit-scrollbar-thumb:active {
+    background: var(--bg-active);
+}
+
+/* Smooth scrolling behavior */
+#tabs-container {
+    scroll-behavior: smooth;
+}
+
+/* Add subtle shadow to indicate more tabs */
+#tabs-container::after {
+    content: '';
+    position: absolute;
+    right: 0;
+    top: 0;
+    bottom: 1px;
+    width: 30px;
+    background: linear-gradient(to left, var(--bg-app), transparent);
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+#tabs-container.has-overflow::after {
+    opacity: 1;
+}
+
+.tab {
+    padding: 8px 15px;
+    font-size: var(--font-size-sm);
+    color: var(--text-secondary);
+    background-color: transparent;
+    border-right: 1px solid var(--border-subtle);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    min-width: 120px;
+    max-width: 220px;
+    height: 100%;
+    white-space: nowrap;
+    /* Prevent text wrapping */
+    flex-shrink: 0;
+    /* Prevent tabs from shrinking */
+}
+
+/* Tab title text - add ellipsis for overflow */
+.tab>span:not(.close-btn) {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.tab.active {
+    background-color: var(--bg-app);
+    /* Same as workspace bg */
+    color: var(--text-primary);
+    border-top: 2px solid var(--text-accent);
+}
+
+.tab:hover:not(.active) {
+    background-color: var(--bg-hover);
+}
+
+/* Editor Area */
+#editor-area {
+    flex: 1;
+    position: relative;
+    overflow: hidden;
+    background-color: #0d1117;
+    /* Canvas bg */
+    background-image: radial-gradient(var(--border-subtle) 1px, transparent 1px);
+    background-size: 20px 20px;
+    /* Grid pattern */
+}
+
+/* --- Inspector --- */
+#inspector {
+    grid-area: inspector;
+    background-color: var(--bg-panel);
+    border-left: 1px solid var(--border-color);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+#inspector .sidebar-content {
+    flex: 1;
+    overflow-y: auto;
+    overflow-x: hidden;
+    padding: 0;
+
+    /* Custom scrollbar styling */
+    scrollbar-width: thin;
+    scrollbar-color: var(--bg-hover) transparent;
+}
+
+#inspector .sidebar-content::-webkit-scrollbar {
+    width: 6px;
+}
+
+#inspector .sidebar-content::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+#inspector .sidebar-content::-webkit-scrollbar-thumb {
+    background-color: var(--bg-hover);
+    border-radius: 3px;
+}
+
+#inspector .sidebar-content::-webkit-scrollbar-thumb:hover {
+    background-color: var(--text-secondary);
+}
+
+/* --- Status Bar --- */
+#status-bar {
+    grid-area: statusbar;
+    background-color: var(--bg-activity-bar);
+    /* Use darker bg */
+    border-top: 1px solid var(--border-color);
+    display: flex;
+    align-items: center;
+    padding: 0 10px;
+    font-size: 11px;
+    color: var(--text-secondary);
+    justify-content: space-between;
+}
+
+/* --- Generic UI Components (Refactored) --- */
+.sidebar-section {
+    padding: 10px;
+}
+
+.sidebar-title {
+    margin-bottom: 10px;
+    font-weight: bold;
+    color: var(--text-primary);
+}
+
+.btn-full {
+    width: 100%;
+    padding: 8px;
+    border-radius: 4px;
+    cursor: pointer;
+    border: none;
+    margin-bottom: 15px;
+    font-family: inherit;
+}
+
+.btn-primary {
+    background: var(--bg-active);
+    color: white;
+}
+
+.btn-primary:hover {
+    background: var(--text-accent);
+}
+
+.btn-secondary {
+    background: var(--bg-input);
+    color: var(--text-primary);
+    border: 1px solid var(--border-color);
+}
+
+.btn-secondary:hover {
+    background: var(--bg-hover);
+}
+
+.draggable-list {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.draggable-item {
+    padding: 5px;
+    background: var(--bg-input);
+    border-radius: 4px;
+    cursor: grab;
+    color: var(--text-secondary);
+}
+
+.draggable-item:hover {
+    background: var(--bg-hover);
+    color: var(--text-primary);
+}
+
+/* --- Template Browser Modal --- */
+.template-browser-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 10000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.template-browser-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.7);
+    backdrop-filter: blur(4px);
+}
+
+.template-browser-content {
+    position: relative;
+    background: var(--bg-panel);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    width: 90%;
+    max-width: 900px;
+    height: 80%;
+    max-height: 700px;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+}
+
+.template-browser-header {
+    padding: 20px;
+    border-bottom: 1px solid var(--border-color);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.template-browser-header h2 {
+    font-size: 20px;
+    color: var(--text-primary);
+    margin: 0;
+}
+
+.close-btn {
+    background: none;
+    border: none;
+    font-size: 28px;
+    color: var(--text-secondary);
+    cursor: pointer;
+    padding: 0;
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 4px;
+    transition: all 0.2s;
+}
+
+.close-btn:hover {
+    background: var(--bg-hover);
+    color: var(--text-primary);
+}
+
+.template-browser-categories {
+    padding: 15px 20px;
+    border-bottom: 1px solid var(--border-color);
+    display: flex;
+    gap: 10px;
+}
+
+.category-btn {
+    padding: 8px 16px;
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    color: var(--text-secondary);
+    cursor: pointer;
+    font-size: 13px;
+    transition: all 0.2s;
+}
+
+.category-btn:hover {
+    background: var(--bg-hover);
+    color: var(--text-primary);
+}
+
+.category-btn.active {
+    background: var(--accent-primary);
+    color: white;
+    border-color: var(--accent-primary);
+}
+
+.template-browser-grid {
+    flex: 1;
+    padding: 20px;
+    overflow-y: auto;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: 15px;
+    align-content: start;
+}
+
+.template-card {
+    background: var(--bg-secondary);
+    border: 2px solid var(--border-color);
+    border-radius: 8px;
+    padding: 12px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.template-card:hover {
+    border-color: var(--accent-primary);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.template-card.selected {
+    border-color: var(--accent-primary);
+    background: var(--bg-hover);
+}
+
+.template-thumbnail {
+    width: 100%;
+    aspect-ratio: 1;
+    background: #1a1a2e;
+    border-radius: 6px;
+    margin-bottom: 10px;
+    overflow: hidden;
+}
+
+.template-thumbnail img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.template-info h3 {
+    font-size: 14px;
+    color: var(--text-primary);
+    margin-bottom: 4px;
+}
+
+.template-category {
+    font-size: 11px;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.template-browser-preview {
+    padding: 20px;
+    border-top: 1px solid var(--border-color);
+    background: var(--bg-secondary);
+    min-height: 120px;
+}
+
+.preview-placeholder {
+    color: var(--text-secondary);
+    text-align: center;
+    padding: 40px;
+    font-style: italic;
+}
+
+.preview-content h3 {
+    font-size: 16px;
+    color: var(--text-primary);
+    margin-bottom: 8px;
+}
+
+.preview-content p {
+    font-size: 13px;
+    color: var(--text-secondary);
+    margin-bottom: 15px;
+    line-height: 1.5;
+}
+
+.preview-stats {
+    display: flex;
+    gap: 20px;
+}
+
+.stat {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.stat-label {
+    font-size: 11px;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.stat-value {
+    font-size: 14px;
+    color: var(--text-primary);
+    font-weight: 500;
+}
+
+.template-browser-footer {
+    padding: 15px 20px;
+    border-top: 1px solid var(--border-color);
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+}
+
+.template-browser-footer button {
+    padding: 8px 20px;
+    border-radius: 6px;
+    font-size: 13px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.btn-cancel {
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    color: var(--text-primary);
+}
+
+.btn-cancel:hover {
+    background: var(--bg-hover);
+}
+
+.btn-apply {
+    background: var(--accent-primary);
+    border: none;
+    color: white;
+    font-weight: 500;
+}
+
+.btn-apply:hover:not(:disabled) {
+    background: var(--accent-hover);
+}
+
+.btn-apply:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+/* Behavior Parameter Controls */
+.behavior-params-section {
+    margin-top: 10px;
+    padding-top: 10px;
+    border-top: 1px solid var(--border-color);
+}
+
+.behavior-param-group {
+    margin-bottom: 12px;
+}
+
+.behavior-param-group h4 {
+    font-size: 11px;
+    color: var(--text-secondary);
+    margin: 10px 0 5px 0;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.param-control {
+    margin-bottom: 8px;
+}
+
+.param-control label {
+    font-size: 11px;
+    color: var(--text-secondary);
+    display: block;
+    margin-bottom: 3px;
+}
+
+.behavior-param-input[type="range"] {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 100%;
+    height: 4px;
+    background: var(--bg-secondary);
+    border-radius: 2px;
+    outline: none;
+}
+
+.behavior-param-input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 14px;
+    height: 14px;
+    background: var(--accent-primary);
+    border-radius: 50%;
+    cursor: pointer;
+}
+
+.behavior-param-input[type="range"]::-moz-range-thumb {
+    width: 14px;
+    height: 14px;
+    background: var(--accent-primary);
+    border-radius: 50%;
+    cursor: pointer;
+    border: none;
+}
+
+.param-value {
+    font-size: 11px;
+    min-width: 40px;
+    text-align: right;
+    color: var(--text-primary);
+    font-weight: 600;
+}
+
+details summary {
+    cursor: pointer;
+    user-select: none;
+}
+
+details summary::-webkit-details-marker {
+    display: none;
+}
+
+details summary::before {
+    content: '';
+    display: inline-block;
+    margin-right: 6px;
+    transition: transform 0.2s;
+    font-size: 10px;
+}
+
+details[open] summary::before {
+    transform: rotate(90deg);
+}
