@@ -1,0 +1,136 @@
+{
+    "id": "solar-system",
+    "name": "Solar System",
+    "description": "A miniature solar system with the Sun and planets orbiting at different speeds. Demonstrates orbital mechanics and gravitational systems.",
+    "category": "astronomy",
+    "canvas": {
+        "width": 800,
+        "height": 600,
+        "background": "#0a0a1a"
+    },
+    "objects": [
+        {
+            "id": "sun",
+            "type": "circle",
+            "x": 400,
+            "y": 300,
+            "radius": 40,
+            "fill": "#ffd700",
+            "stroke": "#ffed4e",
+            "strokeWidth": 3,
+            "opacity": 1,
+            "rotation": 0,
+            "physics": {
+                "enabled": false,
+                "velocity": {
+                    "x": 0,
+                    "y": 0
+                },
+                "mass": 1,
+                "bounciness": 0
+            },
+            "behaviors": []
+        },
+        {
+            "id": "mercury",
+            "type": "circle",
+            "x": 480,
+            "y": 300,
+            "radius": 8,
+            "fill": "#8c7853",
+            "stroke": "#a0896b",
+            "strokeWidth": 1,
+            "opacity": 1,
+            "rotation": 0,
+            "physics": {
+                "enabled": false,
+                "velocity": {
+                    "x": 0,
+                    "y": 0
+                },
+                "mass": 0.1,
+                "bounciness": 0
+            },
+            "behaviors": [
+                "orbit"
+            ]
+        },
+        {
+            "id": "venus",
+            "type": "circle",
+            "x": 520,
+            "y": 300,
+            "radius": 12,
+            "fill": "#ffc649",
+            "stroke": "#ffd97d",
+            "strokeWidth": 1,
+            "opacity": 1,
+            "rotation": 0,
+            "physics": {
+                "enabled": false,
+                "velocity": {
+                    "x": 0,
+                    "y": 0
+                },
+                "mass": 0.2,
+                "bounciness": 0
+            },
+            "behaviors": [
+                "orbit"
+            ]
+        },
+        {
+            "id": "earth",
+            "type": "circle",
+            "x": 570,
+            "y": 300,
+            "radius": 14,
+            "fill": "#4a90e2",
+            "stroke": "#7cb3f5",
+            "strokeWidth": 1,
+            "opacity": 1,
+            "rotation": 0,
+            "physics": {
+                "enabled": false,
+                "velocity": {
+                    "x": 0,
+                    "y": 0
+                },
+                "mass": 0.3,
+                "bounciness": 0
+            },
+            "behaviors": [
+                "orbit"
+            ]
+        },
+        {
+            "id": "mars",
+            "type": "circle",
+            "x": 620,
+            "y": 300,
+            "radius": 10,
+            "fill": "#e27b58",
+            "stroke": "#f09a7d",
+            "strokeWidth": 1,
+            "opacity": 1,
+            "rotation": 0,
+            "physics": {
+                "enabled": false,
+                "velocity": {
+                    "x": 0,
+                    "y": 0
+                },
+                "mass": 0.15,
+                "bounciness": 0
+            },
+            "behaviors": [
+                "orbit"
+            ]
+        }
+    ],
+    "physics": {
+        "gravity": 0,
+        "friction": 0,
+        "enablePhysics": false
+    }
+}
