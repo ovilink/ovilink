@@ -7,6 +7,14 @@
     <title>Ovi Platform</title>
     <link rel="icon" href="data:,">
     <link rel="stylesheet" href="css/style.css">
+    <script type="importmap">
+    {
+      "imports": {
+        "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
+        "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/"
+      }
+    }
+    </script>
     <!-- Using a CDN for icons (e.g., RemixIcon or FontAwesome) would be good, 
          but for now we'll use simple text/SVG placeholders to keep it dependency-free locally -->
 </head>
@@ -17,8 +25,7 @@
         <!-- 1. Activity Bar -->
         <div id="activity-bar">
             <div class="activity-header">
-                <!-- Logo Placeholder -->
-                <div style="width: 30px; height: 30px; background: var(--text-accent); border-radius: 50%;"></div>
+                <img src="icon/ovilink.svg" alt="OviLink" class="brand-logo">
             </div>
 
             <div id="activity-bar-content">
@@ -93,6 +100,8 @@
     <script type="module" src="lib/ovisheet/index.js"></script>
     <script type="module" src="lib/ovichart/index.js"></script>
     <script type="module" src="lib/oviboard/index.js"></script>
+    <script type="module" src="lib/ovistudio/index.js"></script>
+    <script type="module" src="lib/ovi3d/Ovi3D.js"></script>
 </body>
 
 </html>
