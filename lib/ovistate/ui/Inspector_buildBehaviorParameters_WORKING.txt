@@ -1,0 +1,111 @@
+    static buildBehaviorParameters(data) {
+        if (!data.behaviors || data.behaviors.length === 0 || !window.oviEditor) return '';
+
+        const editor = window.oviEditor;
+        let html = '';
+
+        data.behaviors.forEach(behaviorId => {
+            const behavior = editor.behaviorSystem?.registry?.get(behaviorId);
+            if (!behavior || !behavior.parameters) return;
+
+            const params = Object.entries(behavior.parameters);
+            if (params.length === 0) return;
+
+            html += `
+                <div class="inspector-section">
+                    <div class="section-title">${behavior.icon} ${behavior.name} Settings</div>
+            `;
+
+            // INJECT: Activation Controls
+            const actMode = editor.behaviorSystem.registry.getParameter(data, behaviorId, 'activationMode') || 'on_enter';
+            const actId = editor.behaviorSystem.registry.getParameter(data, behaviorId, 'activationId') || '';
+
+            html += `
+                <div class="property-control">
+                    <div class="property-label">Activation</div>
+                    <select class="behavior-param-select"
+                        data-behavior="${behaviorId}"
+                        data-param="activationMode"
+                        style="width: 100%; padding: 5px; background: var(--bg-secondary); border: 1px solid var(--border-color); color: var(--text-primary); border-radius: 3px; font-size: 11px;">
+                        <option value="on_enter" ${actMode === 'on_enter' ? 'selected' : ''}>On Enter (Auto)</option>
+                        <option value="on_hover" ${actMode === 'on_hover' ? 'selected' : ''}>On Hover</option>
+                        <option value="on_click" ${actMode === 'on_click' ? 'selected' : ''}>On Click (One-way)</option>
+                        <option value="on_click_toggle" ${actMode === 'on_click_toggle' ? 'selected' : ''}>On Click (Toggle)</option>
+                        <option value="manual" ${actMode === 'manual' ? 'selected' : ''}>Manual (Event)</option>
+                    </select>
+                </div>
+
+                <div class="property-control" style="${actMode === 'manual' ? '' : 'display: none;'}" data-param-container="activationId">
+                    <div class="property-label">Activation Event ID</div>
+                    <input type="text" 
+                        class="behavior-param-text"
+                        data-behavior="${behaviorId}"
+                        data-param="activationId"
+                        value="${actId}"
+                        placeholder="e.g. start_type"
+                        style="width: 100%; padding: 4px; background: var(--bg-secondary); border: 1px solid var(--border-color); color: var(--text-primary); border-radius: 3px; font-size: 11px;">
+                </div>
+            `;
+
+            params.forEach(([paramName, paramDef]) => {
+                const currentValue = editor.behaviorSystem.registry.getParameter(data, behaviorId, paramName);
+
+                if (paramDef.type === 'slider' || paramDef.type === 'number') {
+                    // CONDITIONAL VISIBILITY: Loop Delay
+                    let style = "width: 100%;";
+                    let containerStyle = "";
+                    if (paramName === 'loopDelay') {
+                        const loopEnabled = editor.behaviorSystem.registry.getParameter(data, behaviorId, 'loop');
+                        if (!loopEnabled) containerStyle = "display: none;";
+                    }
+
+                    html += `
+                        <div class="property-control" style="${containerStyle}" data-param-container="${paramName}">
+                            <div class="property-label">
+                                <span>${paramDef.label}</span>
+                                <span class="property-value">${Number(currentValue).toFixed(1)}</span>
+                            </div>
+                            <input type="range" 
+                                class="behavior-param-slider"
+                                data-behavior="${behaviorId}"
+                                data-param="${paramName}"
+                                min="${paramDef.min || 0}"
+                                max="${paramDef.max || 100}"
+                                step="${paramDef.step || (paramDef.max - paramDef.min) / 100}"
+                                value="${currentValue}"
+                                style="${style}">
+                        </div>
+                    `;
+                } else if (paramDef.type === 'checkbox') {
+                    html += `
+                        <div class="property-control">
+                            <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                                <input type="checkbox" 
+                                    class="behavior-param-checkbox"
+                                    data-behavior="${behaviorId}"
+                                    data-param="${paramName}"
+                                    ${currentValue ? 'checked' : ''}>
+                                <span style="font-size: 11px;">${paramDef.label}</span>
+                            </label>
+                        </div>
+                    `;
+                } else if (paramDef.type === 'text') {
+                    html += `
+                        <div class="property-control">
+                            <div class="property-label">${paramDef.label}</div>
+                            <input type="text" 
+                                class="behavior-param-text"
+                                data-behavior="${behaviorId}"
+                                data-param="${paramName}"
+                                value="${currentValue || paramDef.default || ''}"
+                                style="width: 100%; padding: 4px; background: var(--bg-secondary); border: 1px solid var(--border-color); color: var(--text-primary); border-radius: 3px; font-size: 11px;">
+                        </div>
+                    `;
+                }
+            });
+
+            html += `</div>`;
+        });
+
+        return html;
+    }
