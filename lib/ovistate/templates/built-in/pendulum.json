@@ -1,0 +1,42 @@
+{
+    "id": "pendulum",
+    "name": "Pendulum",
+    "description": "A swinging pendulum demonstrating periodic motion and energy conservation.",
+    "category": "physics",
+    "canvas": {
+        "width": 800,
+        "height": 600,
+        "background": "#1a1a2e"
+    },
+    "objects": [
+        {
+            "id": "bob_1",
+            "type": "circle",
+            "x": 400,
+            "y": 300,
+            "radius": 25,
+            "fill": "#4ecdc4",
+            "stroke": "#2a9d8f",
+            "strokeWidth": 2,
+            "opacity": 1,
+            "rotation": 0,
+            "physics": {
+                "enabled": false,
+                "velocity": {
+                    "x": 0,
+                    "y": 0
+                },
+                "mass": 1,
+                "bounciness": 0
+            },
+            "behaviors": [
+                "orbit"
+            ]
+        }
+    ],
+    "physics": {
+        "gravity": 0,
+        "friction": 0,
+        "enablePhysics": false
+    }
+}

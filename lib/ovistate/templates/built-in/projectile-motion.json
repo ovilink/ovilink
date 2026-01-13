@@ -1,0 +1,40 @@
+{
+    "id": "projectile-motion",
+    "name": "Projectile Motion",
+    "description": "A ball launched at an angle, demonstrating parabolic trajectory under gravity.",
+    "category": "physics",
+    "canvas": {
+        "width": 800,
+        "height": 600,
+        "background": "#1a1a2e"
+    },
+    "objects": [
+        {
+            "id": "projectile_1",
+            "type": "circle",
+            "x": 50,
+            "y": 500,
+            "radius": 20,
+            "fill": "#ffd93d",
+            "stroke": "#f4a261",
+            "strokeWidth": 2,
+            "opacity": 1,
+            "rotation": 0,
+            "physics": {
+                "enabled": true,
+                "velocity": {
+                    "x": 8,
+                    "y": -12
+                },
+                "mass": 1,
+                "bounciness": 0.6
+            },
+            "behaviors": []
+        }
+    ],
+    "physics": {
+        "gravity": 0.5,
+        "friction": 0.01,
+        "enablePhysics": true
+    }
+}
