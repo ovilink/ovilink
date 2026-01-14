@@ -1,0 +1,40 @@
+{
+    "id": "bouncing-ball",
+    "name": "Bouncing Ball",
+    "description": "A ball that bounces with realistic physics. Perfect for learning about gravity and collisions.",
+    "category": "physics",
+    "canvas": {
+        "width": 800,
+        "height": 600,
+        "background": "#1a1a2e"
+    },
+    "objects": [
+        {
+            "id": "ball_1",
+            "type": "circle",
+            "x": 400,
+            "y": 100,
+            "radius": 30,
+            "fill": "#ff6b6b",
+            "stroke": "#c92a2a",
+            "strokeWidth": 2,
+            "opacity": 1,
+            "rotation": 0,
+            "physics": {
+                "enabled": true,
+                "velocity": {
+                    "x": 0,
+                    "y": 0
+                },
+                "mass": 1,
+                "bounciness": 0.8
+            },
+            "behaviors": []
+        }
+    ],
+    "physics": {
+        "gravity": 0.5,
+        "friction": 0.01,
+        "enablePhysics": true
+    }
+}
